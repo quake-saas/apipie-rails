@@ -5,7 +5,7 @@ module Apipie
 
     class Api
 
-      attr_accessor :short_description, :path, :http_method, :from_routes, :options, :returns
+      attr_accessor :short_description, :path, :http_method, :from_routes, :options, :returns, :operation_id
 
       def initialize(method, path, desc, options)
         @http_method = method.to_s
@@ -13,6 +13,7 @@ module Apipie
         @short_description = desc
         @from_routes = options[:from_routes]
         @options = options
+        @operation_id = options[:operation_id]
       end
 
     end

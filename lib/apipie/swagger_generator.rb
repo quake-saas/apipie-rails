@@ -217,7 +217,7 @@ module Apipie
           warning_tags = []
         end
 
-        op_id = swagger_op_id_for_path(api.http_method, api.path)
+        op_id = api.operation_id || swagger_op_id_for_method(@current_method)
 
         include_op_id_in_computed_interface_id(op_id)
 
@@ -261,7 +261,7 @@ module Apipie
     end
 
     def swagger_op_id_for_method(method)
-      remove_colons method.resource.controller.name + "::" + method.method
+      method.method + '_' + method.resource._id
     end
 
     def swagger_id_for_typename(typename)
@@ -615,7 +615,6 @@ module Apipie
     end
 
     def swagger_params_array_for_method(method, path)
-
       swagger_result = []
       all_params_hash = add_missing_params(method, path)
 
@@ -627,14 +626,16 @@ module Apipie
       add_params_from_hash(swagger_result, path_param_defs_hash, nil, "path")
 
       if params_in_body? && body_allowed_for_current_method
+        api = method.apis.find { |api| api.path == path }
+        object_name = "#{api.operation_id || swagger_op_id_for_method(method)}_input"
         if params_in_body_use_reference?
-          swagger_schema_for_body = {"$ref" => gen_referenced_block_from_params_array("#{swagger_op_id_for_method(method)}_input", body_param_defs_array)}
+          swagger_schema_for_body = {"$ref" => gen_referenced_block_from_params_array(object_name, body_param_defs_array)}
         else
           swagger_schema_for_body = json_schema_obj_from_params_array(body_param_defs_array)
         end
 
         swagger_body_param = {
-            name: 'body',
+            name: object_name,
             in: 'body',
             schema: swagger_schema_for_body
         }
